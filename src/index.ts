@@ -41,7 +41,7 @@ async function getBotInfos(client: TelegramClient) {
     }
 
     return dialogs
-        .filter(v => !!v.entity['bot'])
+        .filter(v => !!v.entity['bot'] || !!v.isChannel || !!v.isGroup)
         .map(v => {
             const entity = v.entity as Api.User;
 
