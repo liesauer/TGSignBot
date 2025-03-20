@@ -75,6 +75,11 @@ async function loadConfig() {
             apiHash: '',
             session: '',
             account: '',
+            deviceModel: '',
+            systemVersion: '',
+            appVersion: '',
+            langCode: '',
+            systemLangCode: '',
         },
 
         signin: {
@@ -102,7 +107,13 @@ function getAccountConfig() {
     const account = tonfig.get<string>("account.account");
     const session = tonfig.get<string>("account.session", "");
 
-    return { apiId, apiHash, account, session };
+    const deviceModel = tonfig.get<string>("account.deviceModel", "");
+    const systemVersion = tonfig.get<string>("account.systemVersion", "");
+    const appVersion = tonfig.get<string>("account.appVersion", "");
+    const langCode = tonfig.get<string>("account.langCode", "");
+    const systemLangCode = tonfig.get<string>("account.systemLangCode", "");
+
+    return { apiId, apiHash, account, session, deviceModel, systemVersion, appVersion, langCode, systemLangCode };
 }
 
 function getProxyConfig() {
@@ -136,7 +147,7 @@ async function main() {
 
     await checkConfig();
 
-    let { apiId, apiHash, account, session } = getAccountConfig();
+    let { apiId, apiHash, account, session, deviceModel, systemVersion, appVersion, langCode, systemLangCode } = getAccountConfig();
 
     if (!session) {
         logger.info('请登录');
@@ -149,6 +160,11 @@ async function main() {
         connectionRetries: 5,
         useWSS: false,
         proxy: proxy.ip && proxy.port ? proxy : undefined,
+        deviceModel: deviceModel || undefined,
+        systemVersion: systemVersion || undefined,
+        appVersion: appVersion || undefined,
+        langCode: langCode || undefined,
+        systemLangCode: systemLangCode || undefined,
     });
 
     await client.start({
