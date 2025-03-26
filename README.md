@@ -20,6 +20,20 @@ xxx_checkin = "签到"
 ```
 
 
+## 频道备注配置
+修改配置中的 `alias` 节点：
+
+频道备注，输出签到信息时，如果有备注名则优先显示，否则显示频道名，规避不好的频道名。
+
+示例：
+
+```toml
+[alias]
+myqiandaobot = "XX查档"
+xxx_checkin = "XX站"
+```
+
+
 ## 代理设置
 
 如果你所在的地区无法直连TG服务器，可使用代理进行连接
@@ -29,6 +43,23 @@ xxx_checkin = "签到"
 参考：
 <br />
 [Using MTProxies and Socks5 Proxies](https://gram.js.org/getting-started/authorization#using-mtproxies-and-socks5-proxies)
+
+
+## PushMe 通知配置
+修改配置中的 `pushme` 节点：
+
+如果不是自建服务器，`PUSHME_HOST` 不需要填写。
+
+示例：
+
+```toml
+[pushme]
+PUSHME_HOST = "https://push.i-i.me"
+PUSHME_PUSH_KEY = "xxxxx"
+PUSHME_TEMP_KEY = ""
+PUSHME_CHANNEL = ""
+```
+
 
 ## 配置说明
 

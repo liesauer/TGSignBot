@@ -3,6 +3,7 @@ import { Api, Logger, TelegramClient } from 'telegram';
 import { LogLevel } from 'telegram/extensions/Logger';
 import { StringSession } from 'telegram/sessions';
 import { Dialog } from 'telegram/tl/custom/dialog';
+import * as Util from '@liesauer/util';
 
 import { Tonfig } from '@liesauer/tonfig';
 
@@ -86,6 +87,17 @@ async function loadConfig() {
             _: "/sign",
         },
 
+        alias: {
+            _: "频道备注",
+        },
+
+        pushme: {
+            PUSHME_HOST: '',
+            PUSHME_PUSH_KEY: '',
+            PUSHME_TEMP_KEY: '',
+            PUSHME_CHANNEL: '',
+        },
+
         proxy: {
             ip: "127.0.0.1",
             port: 0,
@@ -129,6 +141,15 @@ function getProxyConfig() {
     return { ip, port, username, password, MTProxy, secret, socksType, timeout };
 }
 
+function getPushMeConfig() {
+    const PUSHME_HOST = tonfig.get<string>("pushme.PUSHME_HOST", "");
+    const PUSHME_PUSH_KEY = tonfig.get<string>("pushme.PUSHME_PUSH_KEY", "");
+    const PUSHME_TEMP_KEY = tonfig.get<string>("pushme.PUSHME_TEMP_KEY", "");
+    const PUSHME_CHANNEL = tonfig.get<string>("pushme.PUSHME_CHANNEL", "");
+
+    return { PUSHME_HOST, PUSHME_PUSH_KEY, PUSHME_TEMP_KEY, PUSHME_CHANNEL };
+}
+
 async function checkConfig() {
     await loadConfig();
 
@@ -143,6 +164,10 @@ async function checkConfig() {
 async function main() {
     logger = new MyLogger();
 
+    Util.setConsoleLog((message: string) => {
+        logger.info(message);
+    });
+
     mkdirSync(DataDir(), { recursive: true });
 
     await checkConfig();
@@ -152,6 +177,12 @@ async function main() {
     if (!session) {
         logger.info('请登录');
     }
+
+    const pushme = getPushMeConfig();
+
+    Object.entries(pushme).forEach(pair => {
+        process.env[pair[0]] = pair[1];
+    });
 
     const proxy = getProxyConfig();
 
@@ -178,6 +209,8 @@ async function main() {
 
     const commands = tonfig.get<AnnotatedDictionary<string, "username">>('signin', {});
 
+    let notifyContent = '';
+
     for (const username in commands) {
         if (!username || username == '_') continue;
 
@@ -193,10 +226,23 @@ async function main() {
             message: command,
         });
 
-        logger.info(`BOT签到，${bot.name}`);
+        const name = tonfig.get<string>(['alias', username], '') || bot.name;
+
+        logger.info(`BOT签到，${name}`);
+        notifyContent += `BOT签到，${name}\n`;
     }
 
     logger.info(`全部签到完毕！`);
+
+    notifyContent += `\n 全部签到完毕！`;
+
+    await Util.sendNotifyEx(["pushme"], {
+        title: "TGSignBot",
+        content: notifyContent,
+        pushme: {
+            type: "text",
+        },
+    });
 
     logger.info(`10 秒后自动退出！`);
 
