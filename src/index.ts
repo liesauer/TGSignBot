@@ -252,6 +252,8 @@ async function main() {
                 if (!btn) continue;
 
                 await btn.click({});
+
+                break;
             }
         } else {
             await client.sendMessage(username, {
