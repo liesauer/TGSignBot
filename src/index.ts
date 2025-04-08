@@ -225,13 +225,39 @@ async function main() {
 
         if (!bot) continue;
 
-        const command = tonfig.get<string>(['signin', username], '');
+        let command = tonfig.get<string>(['signin', username], '');
 
         if (!command) continue;
 
-        await client.sendMessage(username, {
-            message: command,
-        });
+        // 回复按钮
+        if (command.includes(',btn:')) {
+            const [_cmd, _btn] = command.split(',btn:', 2);
+
+            command = _cmd;
+
+            await client.sendMessage(username, {
+                message: command,
+            });
+
+            // 最多等待5秒回复
+            await Util.sleep(5000);
+
+            const messages = await client.getMessages(username, { limit: 5 });
+
+            for (const message of messages) {
+                if (!message.buttons?.length) continue;
+
+                const btn = message.buttons.flat().find(v => v.text == _btn);
+
+                if (!btn) continue;
+
+                await btn.click({});
+            }
+        } else {
+            await client.sendMessage(username, {
+                message: command,
+            });
+        }
 
         const name = tonfig.get<string>(['alias', username], '') || bot.name;
 
