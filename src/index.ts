@@ -8,7 +8,7 @@ import * as Util from '@liesauer/util';
 import { Tonfig } from '@liesauer/tonfig';
 
 import {
-    DataDir, waitForever} from './functions';
+    DataDir, waitForever, escapeHtml} from './functions';
 import { AnnotatedDictionary } from './types';
 
 class MyLogger extends Logger {
@@ -216,18 +216,54 @@ async function main() {
 
     const commands = tonfig.get<AnnotatedDictionary<string, "username">>('signin', {});
 
-    let notifyContent = '';
+    const result: {
+        username: string;
+        name: string;
+        status: string;
+        details: string;
+    }[] = [];
+
+    // 用来调试通知
+    const realSign = true;
 
     for (const username in commands) {
         if (!username || username == '_') continue;
 
         const bot = botInfos.find(v => v.username == username);
 
-        if (!bot) continue;
+        const name = tonfig.get<string>(['alias', username], '') || bot?.name || username;
+
+        if (!bot) {
+            result.push({
+                username,
+                name: name,
+                status: '❎',
+                details: '用户不存在',
+            });
+            continue;
+        };
 
         let command = tonfig.get<string>(['signin', username], '');
 
-        if (!command) continue;
+        if (!command) {
+            result.push({
+                username,
+                name: name,
+                status: '❎',
+                details: '缺少签到指令',
+            });
+            continue;
+        };
+
+        if (!realSign) {
+            result.push({
+                username,
+                name,
+                status: '✅',
+                details: '测试',
+            });
+            continue;
+        }
 
         // 回复按钮
         if (command.includes(',btn:')) {
@@ -244,6 +280,8 @@ async function main() {
 
             const messages = await client.getMessages(username, { limit: 5 });
 
+            let action = false;
+
             for (const message of messages) {
                 if (!message.buttons?.length) continue;
 
@@ -253,7 +291,19 @@ async function main() {
 
                 await btn.click({});
 
+                action = true;
+
                 break;
+            }
+
+            if (!action) {
+                result.push({
+                    username,
+                    name,
+                    status: '❎',
+                    details: '缺少签到按钮',
+                });
+                continue;
             }
         } else {
             await client.sendMessage(username, {
@@ -261,21 +311,87 @@ async function main() {
             });
         }
 
-        const name = tonfig.get<string>(['alias', username], '') || bot.name;
-
-        logger.info(`BOT签到，${name}`);
-        notifyContent += `BOT签到，${name}\n`;
+        result.push({
+            username,
+            name,
+            status: '✅',
+            details: '',
+        });
     }
 
-    logger.info(`全部签到完毕！`);
+    result.sort((a, b) => {
+        if (a.status == '✅' && b.status == '❎') return 1;
+        if (a.status == '❎' && b.status == '✅') return -1;
 
-    notifyContent += `\n 全部签到完毕！`;
+        return 0;
+    });
+
+    const html = `
+<body>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        .name {
+            width: auto;
+            word-break: break-word;
+        }
+        .status {
+            width: 40px;
+            text-align: center;
+        }
+        .details {
+            width: 100px;
+            word-break: break-word;
+        }
+    </style>
+    <table>
+        <thead>
+            <tr>
+                <th class="name">项目</th>
+                <th class="status">状态</th>
+                <th class="details">详情</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${result.map(v => `
+            <tr>
+                <td class="name">${escapeHtml(v.name)}</td>
+                <td class="status">${v.status}</td>
+                <td class="details">${v.details}</td>
+            </tr>
+            `).join('')}
+        </tbody>
+    </table>
+</body>
+`;
+
+    for (const v of result) {
+        if (v.status == '✅') {
+            logger.info(`@${v.username} - ${v.name} - ${v.status}`);
+        } else {
+            logger.info(`@${v.username} - ${v.name} - ${v.status} - ${v.details}`);
+        }
+    }
 
     await Util.sendNotifyEx(["pushme"], {
         title: "TGSignBot",
-        content: notifyContent,
+        content: html,
         pushme: {
-            type: "text",
+            type: "html",
         },
     });
 

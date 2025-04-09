@@ -128,3 +128,12 @@ export async function retry<T = any>(promise: () => Promise<T>, maxRetries: numb
         return retry(promise, maxRetries - 1, retryPolicy); 
     });
 }
+
+export function escapeHtml(unsafe: string): string {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
