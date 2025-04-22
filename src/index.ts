@@ -369,7 +369,7 @@ async function main() {
         <tbody>
             ${result.map(v => `
             <tr>
-                <td class="name">${escapeHtml(v.name)}</td>
+                <td class="name"><a href="https://t.me/${v.username}" target="_blank">${escapeHtml(v.name)}</a></td>
                 <td class="status">${v.status}</td>
                 <td class="details">${v.details}</td>
             </tr>
