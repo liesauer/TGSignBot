@@ -285,7 +285,7 @@ async function main() {
             for (const message of messages) {
                 if (!message.buttons?.length) continue;
 
-                const btn = message.buttons.flat().find(v => v.text == _btn);
+                const btn = message.buttons.flat().find(v => v.text && v.text.includes(_btn));
 
                 if (!btn) continue;
 
