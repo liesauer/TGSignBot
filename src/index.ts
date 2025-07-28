@@ -223,6 +223,22 @@ async function main() {
         details: string;
     }[] = [];
 
+    const printLastReslt = () => {
+        const v = result[result.length - 1];
+
+        if (!v) return;
+
+        if (v.status == '✅') {
+            logger.info(`@${v.username} - ${v.name} - ${v.status}`);
+        } else {
+            logger.info(`@${v.username} - ${v.name} - ${v.status} - ${v.details}`);
+        }
+    };
+
+    for (const v of result) {
+
+    }
+
     // 用来调试通知
     const realSign = true;
 
@@ -240,6 +256,7 @@ async function main() {
                 status: '❎',
                 details: '用户不存在',
             });
+            printLastReslt();
             continue;
         };
 
@@ -252,6 +269,7 @@ async function main() {
                 status: '❎',
                 details: '缺少签到指令',
             });
+            printLastReslt();
             continue;
         };
 
@@ -262,6 +280,7 @@ async function main() {
                 status: '✅',
                 details: '测试',
             });
+            printLastReslt();
             continue;
         }
 
@@ -303,6 +322,7 @@ async function main() {
                     status: '❎',
                     details: '缺少签到按钮',
                 });
+                printLastReslt();
                 continue;
             }
         } else {
@@ -317,6 +337,7 @@ async function main() {
             status: '✅',
             details: '',
         });
+        printLastReslt();
     }
 
     result.sort((a, b) => {
@@ -378,14 +399,6 @@ async function main() {
     </table>
 </body>
 `;
-
-    for (const v of result) {
-        if (v.status == '✅') {
-            logger.info(`@${v.username} - ${v.name} - ${v.status}`);
-        } else {
-            logger.info(`@${v.username} - ${v.name} - ${v.status} - ${v.details}`);
-        }
-    }
 
     await Util.sendNotifyEx(["pushme"], {
         title: "TGSignBot",
