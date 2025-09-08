@@ -10,6 +10,7 @@ import { Tonfig } from '@liesauer/tonfig';
 import {
     DataDir, waitForever, escapeHtml} from './functions';
 import { AnnotatedDictionary } from './types';
+import { magicSpace } from '@liesauer/util';
 
 class MyLogger extends Logger {
     public format(message: string, level: string, messageFormat?: string) {
@@ -400,11 +401,23 @@ async function main() {
 </body>
 `;
 
+    let successCount = 0;
+    let failCount = 0;
+
+    result.forEach(v => {
+        if (v.status == '✅') {
+            successCount++;
+        } else {
+            failCount++;
+        }
+    });
+
     await Util.sendNotifyEx(["pushme"], {
         title: "TGSignBot",
         content: html,
         pushme: {
             type: "html",
+            description: `✅️：${successCount}个${magicSpace(20)} ❎️：${failCount}个`,
         },
     });
 

@@ -1,6 +1,6 @@
 {
   "name": "telegram-sign-bot",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "private": true,
   "bin": "./obfuscated/index.js",
   "pkg": {
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@liesauer/tonfig": "^1.0.5",
-    "@liesauer/util": "^1.2.4",
+    "@liesauer/util": "^1.2.5",
     "telegram": "^2.23.10"
   },
   "devDependencies": {
@@ -28,5 +28,6 @@
     "rimraf": "^5.0.5",
     "ts-node": "^10.9.1",
     "typescript": "4.9.5"
-  }
+  },
+  "packageManager": "yarn@4.7.0"
 }
